@@ -8,5 +8,8 @@ Install vJoy, open "Configure vJoy", and create a virtual joystick with the foll
 - RX
 - RY
 
+E.g. in case you are using vJoy controller 5:
+![vJoy configuration](vjoy-config.png)
+
 
 Icon by <a href="https://www.flaticon.com/free-icons/pedal" title="pedal icons">Pedal icons created by Freepik - Flaticon</a>
