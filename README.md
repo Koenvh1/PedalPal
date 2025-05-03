@@ -16,5 +16,7 @@ Exchange your IP address with your PAL, enter it, and press start. You should se
 
 To see their game, use Steam's screen sharing feature. It's the one with the lowest latency.
 
+![Screenshot](screenshot.png)
+
 
 Icon by <a href="https://www.flaticon.com/free-icons/pedal" title="pedal icons">Pedal icons created by Freepik - Flaticon</a>
