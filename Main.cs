@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -23,6 +24,15 @@ namespace PedalPal
         public Main()
         {
             InitializeComponent();
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (networking != null)
+            {
+                networking.Destroy();
+            }
+            Environment.Exit(0);
         }
 
         private void Main_Load(object sender, EventArgs e)
@@ -48,12 +58,64 @@ namespace PedalPal
 
             inputIP.Text = Properties.Settings.Default.IP;
 
+            comboVJoyID.SelectedIndex = comboVJoyID.FindStringExact(Properties.Settings.Default.VJoyID.ToString());
+
             progressBrake.Minimum = UInt16.MinValue;
             progressBrake.Maximum = UInt16.MaxValue;
             SetWindowTheme(progressBrake.Handle, " ", " ");
             progressThrottle.Minimum = UInt16.MinValue;
             progressThrottle.Maximum = UInt16.MaxValue;
             SetWindowTheme(progressThrottle.Handle, " ", " ");
+            progressBrakeRemote.Minimum = UInt16.MinValue;
+            progressBrakeRemote.Maximum = UInt16.MaxValue;
+            SetWindowTheme(progressBrakeRemote.Handle, " ", " ");
+            progressThrottleRemote.Minimum = UInt16.MinValue;
+            progressThrottleRemote.Maximum = UInt16.MaxValue;
+            SetWindowTheme(progressThrottleRemote.Handle, " ", " ");
+
+            Networking.GetPublicIP().ContinueWith(t =>
+            {
+                if (t.IsCompleted)
+                {
+                    UpdateOwnIP(t.Result);
+                }
+            });
+        }
+
+        private void UpdateOwnIP(string text)
+        {
+            if (inputOwnIP.InvokeRequired)
+            {
+                inputOwnIP.Invoke(new Action(() => UpdateOwnIP(text)));
+            }
+            else
+            {
+                inputOwnIP.Text = text;
+            }
+        }
+
+        public void UpdateRemoteBrake(UInt16 brake)
+        {
+            if (progressBrakeRemote.InvokeRequired)
+            {
+                progressBrakeRemote.Invoke(new Action(() => UpdateRemoteBrake(brake)));
+            }
+            else
+            {
+                progressBrakeRemote.Value = brake;
+            }
+        }
+
+        public void UpdateRemoteThrottle(UInt16 throttle)
+        {
+            if (progressThrottleRemote.InvokeRequired)
+            {
+                progressThrottleRemote.Invoke(new Action(() => UpdateRemoteThrottle(throttle)));
+            }
+            else
+            {
+                progressThrottleRemote.Value = throttle;
+            }
         }
 
         private void comboDevice_SelectedIndexChanged(object sender, EventArgs e)
@@ -105,7 +167,23 @@ namespace PedalPal
 
         private void buttonConnect_Click(object sender, EventArgs e)
         {
-            networking = new Networking(inputIP.Text);
+            var vjoy = new VJoy(this, Convert.ToUInt32(comboVJoyID.Text));
+            if (networking != null)
+            {
+                networking.Destroy();
+            }
+            networking = new Networking(vjoy, inputIP.Text);
+        }
+
+        private void comboVJoyID_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.VJoyID = Convert.ToInt32(comboVJoyID.Text);
+            Properties.Settings.Default.Save();
+        }
+
+        private void linkGameControllers_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("rundll32.exe", "shell32.dll,Control_RunDLL joy.cpl");
         }
     }
 }

@@ -17,53 +17,78 @@ namespace PedalPal
         private int destinationPort = 27001;
         private IPAddress destinationAddress;
 
-        public Networking(string ipAddress)
+        VJoy vjoy;
+
+        UdpClient listener;
+        Thread receiveThread;
+        Thread keepAliveThread;
+
+        public Networking(VJoy vjoy, string ipAddress)
         {
+            this.vjoy = vjoy;
             destinationAddress = IPAddress.Parse(ipAddress);
             KeepConnection();
         }
 
+        public void Destroy()
+        {
+            if (receiveThread != null && receiveThread.IsAlive)
+            {
+                receiveThread.Abort();
+            }
+            if (keepAliveThread != null && keepAliveThread.IsAlive)
+            {
+                keepAliveThread.Abort();
+            }
+            if (listener != null)
+            {
+                listener.Close();
+            }
+        }
+
         private void KeepConnection()
         {
-            var vjoy = new VJoy();
-
-            new Thread(() =>
+            receiveThread = new Thread(() =>
             {
-                UdpClient listener = new UdpClient();
+                listener = new UdpClient();
                 listener.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), sourcePort));
 
-                new Thread(() =>
+                keepAliveThread = new Thread(() =>
                 {
                     while (true)
                     {
-                        listener.Client.SendTo(new byte[] { 2, 4, 6, 8 }, new IPEndPoint(destinationAddress, destinationPort));
+                        listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, destinationPort));
                         Thread.Sleep(3000);
                     }
-                }).Start();
+                });
+                keepAliveThread.Start();
 
-                byte[] buffer = new byte[4];
+                byte[] buffer = new byte[5];
 
                 while (true)
                 {
                     int bufferSize = listener.Client.Receive(buffer);
-                    Console.WriteLine("Received Message:");
-                    var brake = BitConverter.ToUInt16(buffer, 0);
-                    var throttle = BitConverter.ToUInt16(buffer, 2);
-                    vjoy.SetVJoyAxes(brake, throttle);
+                    if (buffer[0] == 0)
+                    {
+                        var brake = BitConverter.ToUInt16(buffer, 1);
+                        var throttle = BitConverter.ToUInt16(buffer, 3);
+                        vjoy.SetVJoyAxes(brake, throttle);
+                    }
                 }
-            }).Start();
+            });
+            receiveThread.Start();
         }
 
         public void SendData(UInt16 brake, UInt16 throttle)
         {
             UdpClient sender2 = new UdpClient();
             sender2.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), destinationPort));
-            byte[] sendData = BitConverter.GetBytes(brake).Concat(BitConverter.GetBytes(throttle)).ToArray();
+            byte[] sendData = new byte[] { 0 }.Concat(BitConverter.GetBytes(brake)).Concat(BitConverter.GetBytes(throttle)).ToArray();
             sender2.Client.SendTo(sendData, new IPEndPoint(destinationAddress, sourcePort));
             sender2.Close();
         }
 
-        public async Task<string> GetPublicIP()
+        public static async Task<string> GetPublicIP()
         {
             using (HttpClient client = new HttpClient())
             {

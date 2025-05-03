@@ -70,5 +70,17 @@ namespace PedalPal.Properties {
                 this["IP"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int VJoyID {
+            get {
+                return ((int)(this["VJoyID"]));
+            }
+            set {
+                this["VJoyID"] = value;
+            }
+        }
     }
 }

@@ -9,11 +9,12 @@ namespace PedalPal
 {
     class VJoy
     {
+        Main main;
 
         vJoy vjoy;
         uint vjoyId;
 
-        public VJoy() { 
+        public VJoy(Main main, uint vjoyId) { 
             vjoy = new vJoy();
 
             if (!vjoy.vJoyEnabled())
@@ -21,7 +22,8 @@ namespace PedalPal
                 Console.WriteLine("vJoy is not enabled!");
             }
 
-            vjoyId = 1;
+            this.main = main;
+            this.vjoyId = vjoyId;
             vjoy.AcquireVJD(vjoyId);
         }
 
@@ -29,6 +31,8 @@ namespace PedalPal
         {
             vjoy.SetAxis(brake, vjoyId, HID_USAGES.HID_USAGE_RX);
             vjoy.SetAxis(throttle, vjoyId, HID_USAGES.HID_USAGE_RY);
+            main.UpdateRemoteBrake(brake);
+            main.UpdateRemoteThrottle(throttle);    
         }
     }
 }
