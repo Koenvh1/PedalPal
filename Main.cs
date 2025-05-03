@@ -136,11 +136,29 @@ namespace PedalPal
                 var state = joystick.GetCurrentState();
 
                 var brake = SimpleJoystick.GetJoystickState(comboBrake.Text, state);
-                var brake_u16 = Convert.ToUInt16(brake);
-                progressBrake.Value = brake;
+                if (brake < 0) brake = 0;
+                UInt16 brake_u16 = 0;
+                try
+                {
+                    brake_u16 = Convert.ToUInt16(brake);
+                }
+                catch (OverflowException)
+                {
+                    brake_u16 = UInt16.MaxValue;
+                }
+                progressBrake.Value = brake_u16;
                 var throttle = SimpleJoystick.GetJoystickState(comboThrottle.Text, state);
-                var throttle_u16 = Convert.ToUInt16(throttle);
-                progressThrottle.Value = throttle;
+                UInt16 throttle_u16 = 0;
+                if (throttle < 0) throttle = 0;
+                try
+                {
+                    throttle_u16 = Convert.ToUInt16(throttle);
+                }
+                catch (OverflowException)
+                {
+                    throttle_u16 = UInt16.MaxValue;
+                }
+                progressThrottle.Value = throttle_u16;
 
                 if (networking != null) networking.SendData(brake_u16, throttle_u16);
                 //Console.WriteLine(state.ToString()); 
