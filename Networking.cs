@@ -57,7 +57,7 @@ namespace PedalPal
                 {
                     while (true)
                     {
-                        listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, receivePort));
+                        listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, sendPort));
                         Thread.Sleep(1500);
                     }
                 });
