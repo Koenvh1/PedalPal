@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
 using System.Net.Http;
+using System.Collections.Concurrent;
 
 namespace PedalPal
 {
     class Networking
     {
-        private int receivePort = 27000;
-        private int sendPort = 27001;
+        private int receivePort = 53544;
         private IPAddress destinationAddress;
 
         VJoy vjoy;
@@ -22,6 +22,8 @@ namespace PedalPal
         UdpClient listener;
         Thread receiveThread;
         Thread keepAliveThread;
+
+        ConcurrentQueue<byte[]> sendQueue = new ConcurrentQueue<byte[]>();
 
         public Networking(VJoy vjoy, string ipAddress)
         {
@@ -57,8 +59,15 @@ namespace PedalPal
                 {
                     while (true)
                     {
-                        listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, sendPort));
-                        Thread.Sleep(1500);
+                        if (sendQueue.TryDequeue(out byte[] sendData))
+                        {
+                            listener.Client.SendTo(sendData, new IPEndPoint(destinationAddress, receivePort));
+                        }
+                        else
+                        {
+                            listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, receivePort));
+                            Thread.Sleep(10);
+                        }
                     }
                 });
                 keepAliveThread.Start();
@@ -81,11 +90,8 @@ namespace PedalPal
 
         public void SendData(UInt16 brake, UInt16 throttle)
         {
-            UdpClient sender2 = new UdpClient();
-            sender2.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), sendPort));
             byte[] sendData = new byte[] { 0 }.Concat(BitConverter.GetBytes(brake)).Concat(BitConverter.GetBytes(throttle)).ToArray();
-            sender2.Client.SendTo(sendData, new IPEndPoint(destinationAddress, receivePort));
-            sender2.Close();
+            sendQueue.Enqueue(sendData);
         }
 
         public static async Task<string> GetPublicIP()
