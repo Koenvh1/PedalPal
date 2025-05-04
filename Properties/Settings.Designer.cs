@@ -37,7 +37,7 @@ namespace PedalPal.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("X")]
+        [global::System.Configuration.DefaultSettingValueAttribute("RZ")]
         public string Brake {
             get {
                 return ((string)(this["Brake"]));

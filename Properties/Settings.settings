@@ -6,7 +6,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Brake" Type="System.String" Scope="User">
-      <Value Profile="(Default)">X</Value>
+      <Value Profile="(Default)">RZ</Value>
     </Setting>
     <Setting Name="Throttle" Type="System.String" Scope="User">
       <Value Profile="(Default)">Y</Value>

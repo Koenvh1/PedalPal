@@ -13,8 +13,8 @@ namespace PedalPal
 {
     class Networking
     {
-        private int sourcePort = 27000;
-        private int destinationPort = 27001;
+        private int receivePort = 27000;
+        private int sendPort = 27001;
         private IPAddress destinationAddress;
 
         VJoy vjoy;
@@ -51,14 +51,14 @@ namespace PedalPal
             receiveThread = new Thread(() =>
             {
                 listener = new UdpClient();
-                listener.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), sourcePort));
+                listener.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), receivePort));
 
                 keepAliveThread = new Thread(() =>
                 {
                     while (true)
                     {
-                        listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, destinationPort));
-                        Thread.Sleep(3000);
+                        listener.Client.SendTo(new byte[] { 1, 0, 0, 0, 0 }, new IPEndPoint(destinationAddress, receivePort));
+                        Thread.Sleep(1500);
                     }
                 });
                 keepAliveThread.Start();
@@ -82,9 +82,9 @@ namespace PedalPal
         public void SendData(UInt16 brake, UInt16 throttle)
         {
             UdpClient sender2 = new UdpClient();
-            sender2.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), destinationPort));
+            sender2.Client.Bind(new IPEndPoint(IPAddress.Parse("0.0.0.0"), sendPort));
             byte[] sendData = new byte[] { 0 }.Concat(BitConverter.GetBytes(brake)).Concat(BitConverter.GetBytes(throttle)).ToArray();
-            sender2.Client.SendTo(sendData, new IPEndPoint(destinationAddress, sourcePort));
+            sender2.Client.SendTo(sendData, new IPEndPoint(destinationAddress, receivePort));
             sender2.Close();
         }
 

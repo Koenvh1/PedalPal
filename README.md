@@ -18,5 +18,7 @@ To see their game, use Steam's screen sharing feature. It's the one with the low
 
 ![Screenshot](screenshot.png)
 
+If the connection does not work, check your firewall settings. You may need to allow the app through your firewall. Worst case, port forward port 27000 over UDP.
+
 
 Icon by <a href="https://www.flaticon.com/free-icons/pedal" title="pedal icons">Pedal icons created by Freepik - Flaticon</a>
