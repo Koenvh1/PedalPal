@@ -29,8 +29,10 @@ namespace PedalPal
 
         public void SetVJoyAxes(UInt16 brake, UInt16 throttle)
         {
-            vjoy.SetAxis(brake, vjoyId, HID_USAGES.HID_USAGE_RX);
-            vjoy.SetAxis(throttle, vjoyId, HID_USAGES.HID_USAGE_RY);
+            Int32 vBrake = (brake >> 1);
+            Int32 vThrottle = (throttle >> 1);
+            vjoy.SetAxis(vBrake, vjoyId, HID_USAGES.HID_USAGE_RX);
+            vjoy.SetAxis(vThrottle, vjoyId, HID_USAGES.HID_USAGE_RY);
             main.UpdateRemoteBrake(brake);
             main.UpdateRemoteThrottle(throttle);    
         }
